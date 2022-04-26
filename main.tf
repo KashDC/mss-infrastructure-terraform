@@ -3,48 +3,48 @@
 resource "aws_ecr_repository" "backend" {
   name = "backend"
 }
-## Build docker images and push to ECR
-#resource "docker_registry_image" "backend"{
-#  name = "${aws_ecr_repository.backend.repository_url}:latest"
-#  build {
-#    context = "../mss-business-ui-servitisation"
-#    dockerfile = "Dockerfile"
-#    labels = {
-#      author : "papapanda"
-#    }
-#  }
-#}
+# Build docker images and push to ECR
+resource "docker_registry_image" "backend"{
+  name = "${aws_ecr_repository.backend.repository_url}:latest"
+  build {
+    context = "../mss-business-ui-servitisation"
+    dockerfile = "Dockerfile"
+    labels = {
+      author : "papapanda"
+    }
+  }
+}
 
 resource "aws_ecs_cluster" "my_cluster" {
   name = "kash-cluster" # Naming the cluster
 }
 
-#
-#resource "aws_ecs_task_definition" "my_first_task" {
-#  family                   = "my-first-task" # Naming our first task
-#  container_definitions    = <<DEFINITION
-#  [
-#    {
-#      "name": "my-first-task",
-#      "image": "${aws_ecr_repository.backend.repository_url}:latest",
-#      "essential": true,
-#      "portMappings": [
-#        {
-#          "containerPort": 5000,
-#          "hostPort": 5000
-#        }
-#      ],
-#      "memory": 1024,
-#      "cpu": 512
-#    }
-#  ]
-#  DEFINITION
-#  requires_compatibilities = ["FARGATE"] # Stating that we are using ECS Fargate
-#  network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
-#  memory                   = 1024         # Specifying the memory our container requires
-#  cpu                      = 512         # Specifying the CPU our container requires
-#  execution_role_arn       = "${aws_iam_role.ecsT.arn}"
-#}
+
+resource "aws_ecs_task_definition" "my_first_task" {
+  family                   = "my-first-task" # Naming our first task
+  container_definitions    = <<DEFINITION
+  [
+    {
+      "name": "my-first-task",
+      "image": "${aws_ecr_repository.backend.repository_url}:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "hostPort": 5000
+        }
+      ],
+      "memory": 1024,
+      "cpu": 512
+    }
+  ]
+  DEFINITION
+  requires_compatibilities = ["FARGATE"] # Stating that we are using ECS Fargate
+  network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
+  memory                   = 1024         # Specifying the memory our container requires
+  cpu                      = 512         # Specifying the CPU our container requires
+  execution_role_arn       = "${aws_iam_role.ecsT.arn}"
+}
 
 resource "aws_iam_role" "ecsT" {
   name               = "ecsT"
