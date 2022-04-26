@@ -1,0 +1,27 @@
+# This is an example Starter pipeline configuration
+# Use a skeleton to build, test and deploy using manual and parallel steps
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: atlassian/default-image:2
+options:
+    docker: true
+    size: 2x
+pipelines:
+  default:
+    - parallel:
+      - step:
+          name: 'Build and Test'
+          script:
+            - docker build -t mss-business-app .
+            - pipe: atlassian/aws-ecr-push-image:1.4.2
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: eu-west-2
+                IMAGE_NAME: "mss-business-app"
+                TAGS: "latest"
+                DEBUG: "true"
+definitions:
+    services:
+      docker:
+        memory: 4096

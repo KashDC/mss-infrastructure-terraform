@@ -1,0 +1,222 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %}
+
+<!-- Plugins CSS goes HERE  -->
+{% block plugin_stylesheets %}
+
+    <!-- chartist CSS -->
+    <link href="/static/assets/plugins/chartist-js/dist/chartist.min.css" rel="stylesheet">
+    <link href="/static/assets/plugins/chartist-js/dist/chartist-init.css" rel="stylesheet">
+    <link href="/static/assets/plugins/chartist-plugin-tooltip-master/dist/chartist-plugin-tooltip.css"
+          rel="stylesheet">
+    <!--This page css - Morris CSS -->
+    <link href="/static/assets/plugins/c3-master/c3.min.css" rel="stylesheet">
+
+{% endblock plugin_stylesheets %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+
+
+    <div class="container-fluid">
+        <!-- ============================================================== -->
+        <!-- Bread crumb and right sidebar toggle -->
+        <!-- ============================================================== -->
+        <div class="row page-titles">
+            <div class="col-md-5 col-8 align-self-center">
+                <h3 class="text-themecolor">Sample Dashboard</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                    <li class="breadcrumb-item active">Sample Dashboard</li>
+                </ol>
+            </div>
+            <div class="col-md-7 col-4 align-self-center">
+
+                <script>
+                    function la(src) {
+                        window.location = src;
+                    }
+                </script>
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Bread crumb and right sidebar toggle -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Start Page Content -->
+        <!-- ============================================================== -->
+        <!-- Row -->
+
+
+
+            <div class="col-lg-5 col-md-4">
+                <div class="card">
+                    <div class="card-block">
+                        <div class="col-12">
+                            <div class="d-flex flex-wrap">
+                                <div>
+                                    <h3 class="card-title">Temperature</h3>
+                                    <h6 class="card-subtitle">The graph below shows Temperature</h6>
+                                </div>
+                                <div class="ml-auto">
+                                    <ul class="list-inline">
+
+
+                                    </ul>
+
+                                </div>
+                            </div>
+                            <script>
+                                var ReverseArray = [];
+                                const r_temp = [];
+                                const r2 = [];
+
+
+                                async function getData() {
+                                    fetch('https://qit5ayfqrk.execute-api.eu-west-2.amazonaws.com/dev/assets/metric?id=1&limit=100')
+                                        .then(data => data.json())
+                                        .then(data => {
+                                            const obj = JSON.parse(data.message[0].payload[0].metric);
+                                            {#console.log(data.message[0].payload[0]);#}
+                                            {#console.log(obj);#}
+
+                                            var dev = "A81758FFFE05DC28";
+                                            {#var sensor = "temperature";#}
+                                            var results = [];
+
+                                            {#console.log(r_temp);#}
+                                            {#console.log(r2);#}
+
+
+                                            for (var i = 0; i < data.message.length; i++) {
+                                                if (data.message[i].dev_eui === dev && data.message[i].payload[0].sensor_type === "temperature") {
+                                                    r_temp.push(data.message[i].payload[0].metric);
+                                                }
+                                            }
+
+                                            for (var j = 0; j < data.message.length; j++) {
+                                                if (data.message[j].dev_eui === dev) {
+                                                    var date = new Date(data.message[j].timestamp);
+                                                    var hours = date.getHours(); // minutes part from the timestamp
+                                                    var minutes = date.getMinutes(); // seconds part from the timestamp
+                                                    var seconds = date.getSeconds(); // will display time in 10:30:23 format
+                                                    var formattedTime = hours + ':' + minutes + ':' + seconds;
+                                                    r2.push(formattedTime);
+                                                }
+                                            }
+                                            {#console.log(typeof(results));#}
+                                            {#console.log(r2);#}
+                                            var perChunk1 = 1;
+                                            var perChunk2 = 1;
+                                            var r_tempr = r_temp.reduce((resultArray, item, index) => {
+                                                var chunkIndex = Math.floor(index / perChunk1)
+                                                if (!resultArray[chunkIndex]) {
+                                                    resultArray[chunkIndex] = [] // start a new chunk
+                                                }
+                                                resultArray[chunkIndex].push(item)
+                                                return resultArray
+                                            }, [])
+                                            var r2r = r2.reduce((resultArray, item, index) => {
+                                                var chunkIndex = Math.floor(index / perChunk2)
+                                                if (!resultArray[chunkIndex]) {
+                                                    resultArray[chunkIndex] = [] // start a new chunk
+                                                }
+                                                resultArray[chunkIndex].push(item)
+                                                return resultArray
+                                            }, [])
+                                            {#console.log(r_temp);#}
+                                            const propertyNames = Object.values(r_temp);
+                                            {#console.log(propertyNames)#}
+                                            {#console.log(typeof (propertyNames))#}
+                                            {#console.log(r2);#}
+                                            {#console.log(r_temp);#}
+
+
+                                            var length = r2.length;
+                                            for (var i = length - 1; i >= 0; i--) {
+                                                ReverseArray.push(r2[i]);
+                                            }
+                                            {#console.log(ReverseArray)#}
+
+
+                                        })
+                                }
+
+
+                            </script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.js"></script>
+                            <canvas id="chart" width=500 height=250></canvas>
+                            <script>
+
+                                chartIT();
+                                var xlabel = r_temp;
+                                var ylabel = ReverseArray;
+
+                                async function chartIT() {
+                                    await getData();
+
+
+
+                                    const ctx = document.getElementById('chart').getContext('2d');
+
+                                    myChart = new Chart(ctx, {
+                                        type: 'line',
+                                        data: {
+                                            labels: ylabel,
+                                            datasets: [{
+                                                label: 'Temperature',
+                                                data: xlabel,
+                                                backgroundColor: [
+                                                    'rgba(128, 0, 0, 0.2)',
+
+                                                ],
+                                                borderColor: [
+                                                    'rgba(128, 0, 0, 1)',
+
+                                                ],
+                                                borderWidth: 1
+                                            }]
+                                        }
+
+                                    });
+
+                                    setTimeout(function() {
+                                            myChart.update()
+                                        }, 1200)
+
+
+                                }
+                            </script>
+
+                            </script>
+
+                            </script>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Row -->
+            <!-- Row -->
+
+            <!-- Column -->
+
+    </div>
+
+
+
+    </div>
+    <!-- ============================================================== -->
+    <!-- End PAge Content -->
+    <!-- ============================================================== -->
+    </div>
+
+
+{% endblock content %}
+
+
